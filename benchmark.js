@@ -2,9 +2,10 @@ var net = require('net')
 var readline = require('readline');
 
 for (var i=0; i<200; i++) {
-  net.connect(143, "imap.qq.com", function() {
-    console.log('connected');
-  });
+  net.connect(143, "imap.qq.com")
+    .on('data', function(chunk) {
+      console.log(chunk.toString());
+    })
 }
 
 readline.createInterface({

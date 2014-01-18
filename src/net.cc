@@ -53,9 +53,11 @@ Handle<Value> Net::Connect(int port, String hostname) {
   return scope.Close(Null());
 }
 
-void Net::Alloc(uv_handle_t* handle, size_t size, uv_buf_t* buf) {
-  buf->base = (char*)malloc(size);
-  buf->len = size;
+uv_buf_t Net::Alloc(uv_handle_t* handle, size_t size) {
+  uv_buf_t buf;
+  buf.base = (char*) malloc(size);
+  buf.len  = size;
+  return buf;
 }
 
 void Net::OnConnected(uv_connect_t *sock, int status) {
@@ -65,9 +67,9 @@ void Net::OnConnected(uv_connect_t *sock, int status) {
   uv_read_start(handle, Alloc, ReadConnection);
 }
 
-void Net::ReadConnection(uv_stream_t *handle, size_t nread, uv_buf_t *buf) {
-  printf("S: %s\n", buf->base);
-  free(buf->base);
+void Net::ReadConnection(uv_stream_t *handle, ssize_t nread, uv_buf_t buf) {
+  printf("S: %s\n", buf.base);
+  free(buf.base);
   uv_read_stop(handle);
 }
 
