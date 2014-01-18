@@ -1,9 +1,7 @@
 
 # SimpleNet
 
-A more lighter module for socket client.
-
-It's under being developed.
+Alternative module to net, It's under being developed.
 
 ### Current comparison
 
