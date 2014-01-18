@@ -38,12 +38,13 @@ Net::~Net() {
 Handle<Value> Net::Connect(const Arguments& args) {
   HandleScope scope;
 
-  uv_tcp_t *socket = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
-  uv_connect_t *conn = (uv_connect_t *)malloc(sizeof(uv_connect_t));
+  uv_tcp_t *handle = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
+  uv_connect_t *sock = (uv_connect_t *)malloc(sizeof(uv_connect_t));
   struct sockaddr_in dest = uv_ip4_addr("163.177.65.209", 143);
 
-  uv_tcp_init(uv_default_loop(), socket);
-  uv_tcp_connect(conn, socket, dest, OnConnected);
+  sock->data = handle;
+  uv_tcp_init(uv_default_loop(), handle);
+  uv_tcp_connect(sock, handle, dest, OnConnected);
   return args.This();
 }
 
@@ -52,9 +53,22 @@ Handle<Value> Net::Connect(int port, String hostname) {
   return scope.Close(Null());
 }
 
-void Net::OnConnected(uv_connect_t *socket, int status) {
-  printf("connected\n");
+void Net::Alloc(uv_handle_t* handle, size_t size, uv_buf_t* buf) {
+  buf->base = (char*)malloc(size);
+  buf->len = size;
 }
 
+void Net::OnConnected(uv_connect_t *sock, int status) {
+  HandleScope scope;
+
+  uv_stream_t *handle = (uv_stream_t*)sock->data;
+  uv_read_start(handle, Alloc, ReadConnection);
+}
+
+void Net::ReadConnection(uv_stream_t *handle, size_t nread, uv_buf_t *buf) {
+  printf("S: %s\n", buf->base);
+  free(buf->base);
+  uv_read_stop(handle);
+}
 
 NODE_MODULE(net, Net::Init);

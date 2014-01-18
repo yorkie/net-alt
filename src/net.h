@@ -25,8 +25,9 @@ private:
   static Handle<Value> Connect(int port, String hostname);
   static Persistent<Function> constructor;
 
+  static void Alloc(uv_handle_t* handle, size_t size, uv_buf_t* buf);
   static void OnConnected(uv_connect_t *socket, int status);
-
+  static void ReadConnection(uv_stream_t *handle, size_t nread, uv_buf_t *buf);
 };
 
 #endif

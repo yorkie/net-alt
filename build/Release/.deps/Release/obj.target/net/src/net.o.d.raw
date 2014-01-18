@@ -1,0 +1,9 @@
+Release/obj.target/net/src/net.o: ../src/net.cc ../src/net.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/deps/v8/include/v8.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/deps/v8/include/v8stdint.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/deps/uv/include/uv.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/deps/uv/include/uv-private/uv-unix.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/deps/uv/include/uv-private/ngx-queue.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/deps/uv/include/uv-private/uv-darwin.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/src/node.h \
+  /Users/liuyazhong/.node-gyp/0.10.24/src/node_object_wrap.h
