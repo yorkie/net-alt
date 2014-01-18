@@ -1,0 +1,10 @@
+{
+  "name": "net-alt",
+  "version": "0.0.1",
+  "description": "more light net implementation",
+  "main": "lib/index.js",
+  "scripts": {
+    "install": "node-gyp configure build",
+    "test": "node lib/index"
+  }
+}
