@@ -20,7 +20,7 @@ public:
   static Handle<Value> New(const Arguments& args);
 
 private:
-  Net(int port, string hostname);
+  Net(Handle<Object> object, string hostname, int port);
   Net();
   ~Net();
 
@@ -29,12 +29,14 @@ private:
 
   uv_tcp_t *handle_;
   uv_connect_t *socket_;
+  Persistent<v8::Object> object_;
 
   static Handle<Value> Connect(const Arguments& args);
   static Persistent<Function> constructor;
+  static Persistent<Function> callback;
 
   static uv_buf_t Alloc(uv_handle_t* handle, size_t size);
-  static void OnConnected(uv_connect_t *socket, int status);
+  static void AfterConnection(uv_connect_t *socket, int status);
   static void ReadConnection(uv_stream_t *handle, ssize_t nread, uv_buf_t buf);
 };
 
