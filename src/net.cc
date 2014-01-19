@@ -28,7 +28,7 @@ Handle<Value> Net::NewInstance(const Arguments& args) {
   string hostname;
 
   if (!args[0]->IsNumber() || !args[1]->IsString())
-    return ThrowTypeError("Bad parameter");
+    return ThrowTypeError("Bad Arguments");
   
   v8::String::Utf8Value phost(args[1]->ToString());
   port = args[0]->Int32Value();
