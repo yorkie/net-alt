@@ -8,7 +8,7 @@ Alternate implementation to replace the partial core net, It's under being devel
 
 * Less RSS
 
-* Network client within a large number of concurrent connections
+* Network client within a large number of concurrent connections in stand-alone
 
 
 ### Installation
