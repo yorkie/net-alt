@@ -1,7 +1,14 @@
 
-# SimpleNet
+# net-alt
 
-Alternative module to net, It's under being developed.
+Alternate implementation to replace the partial core net, It's under being developed.
+
+
+### Features
+
+* Less RSS
+
+* Network client within a large number of concurrent connections
 
 
 ### Installation
