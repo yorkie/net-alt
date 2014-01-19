@@ -37,7 +37,7 @@ Handle<Value> Net::NewInstance(const Arguments& args) {
   if (args.IsConstructCall()) {
     Net* net_wrap = new Net(hostname, port);
     net_wrap->Wrap(args.This());
-    net_wrap->object_ = v8::Persistent<Object>::New(args.This());
+    net_wrap->object_ = Persistent<Object>::New(args.This());
     return args.This();
   } else {
     return Undefined();
@@ -54,23 +54,23 @@ Net::Net() {
 }
 
 Net::~Net() {
-  printf("abc\n");
-  // TODO
+  delete uv_handle_;
+  delete uv_socket_;
 }
 
 Handle<Value> Net::Connect(const Arguments& args) {
   HandleScope scope;
 
   Net *net_wrap = Unwrap<Net>(args.This());
-  net_wrap->handle_ = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
-  net_wrap->socket_ = (uv_connect_t *)malloc(sizeof(uv_connect_t));
+  net_wrap->uv_handle_ = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
+  net_wrap->uv_socket_ = (uv_connect_t *)malloc(sizeof(uv_connect_t));
   net_wrap->callback_ = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
   struct sockaddr_in dest = uv_ip4_addr(net_wrap->hostname_, net_wrap->port_);
 
-  net_wrap->socket_->data = net_wrap;
-  net_wrap->handle_->data = net_wrap;
-  uv_tcp_init(uv_default_loop(), net_wrap->handle_);
-  uv_tcp_connect(net_wrap->socket_, net_wrap->handle_, dest, AfterConnection);
+  net_wrap->uv_socket_->data = net_wrap;
+  net_wrap->uv_handle_->data = net_wrap;
+  uv_tcp_init(uv_default_loop(), net_wrap->uv_handle_);
+  uv_tcp_connect(net_wrap->uv_socket_, net_wrap->uv_handle_, dest, AfterConnection);
   return args.This();
 }
 
@@ -87,7 +87,7 @@ Handle<Value> Net::Write(const Arguments& args) {
   uv_buf_t buf = uv_buf_init(const_cast<char*>(data.c_str()), data.length());
   uv_write_t *writer = (uv_write_t *)malloc(sizeof(uv_write_t));
   writer->data = net_wrap;
-  uv_write(writer, (uv_stream_t*)net_wrap->handle_, &buf, 1, AfterWrite);
+  uv_write(writer, (uv_stream_t*)net_wrap->uv_handle_, &buf, 1, AfterWrite);
 
   return args.This();
 }
@@ -96,8 +96,8 @@ Handle<Value> Net::End(const Arguments& args) {
   HandleScope scope;
   Net *net_wrap = Unwrap<Net>(args.This());
 
-  uv_close(net_wrap->handle_, NULL);
-  return args.This();
+  uv_close((uv_handle_t*)net_wrap->uv_handle_, AfterEnd);
+  return Undefined();
 }
 
 uv_buf_t Net::Alloc(uv_handle_t* handle, size_t size) {
@@ -110,7 +110,7 @@ uv_buf_t Net::Alloc(uv_handle_t* handle, size_t size) {
 void Net::AfterConnection(uv_connect_t *socket, int status) {
   HandleScope scope;
   Net *net_wrap = static_cast<Net*>(socket->data);
-  uv_read_start((uv_stream_t*)net_wrap->handle_, Alloc, Read);
+  uv_read_start((uv_stream_t*)net_wrap->uv_handle_, Alloc, Read);
 }
 
 void Net::AfterWrite(uv_write_t *writer, int status) {
@@ -118,12 +118,23 @@ void Net::AfterWrite(uv_write_t *writer, int status) {
   Net *net_wrap = static_cast<Net*>(writer->data);
   free(writer);
 
-  uv_read_start((uv_stream_t*)net_wrap->handle_, Alloc, Read);
+  uv_read_start((uv_stream_t*)net_wrap->uv_handle_, Alloc, Read);
+}
+
+void Net::AfterEnd(uv_handle_t *handle) {
+  HandleScope scope;
+
+  Net* net_wrap = static_cast<Net*>(handle->data);
+  net_wrap->handle_->SetPointerInInternalField(0, NULL);
+  net_wrap->handle_.Dispose();
+  net_wrap->handle_.Clear();
+
+  delete net_wrap;
 }
 
 void Net::Read(uv_stream_t *handle, ssize_t nread, uv_buf_t buf) {
   HandleScope scope;
-  Net *net_wrap = static_cast<Net*>(handle->data);
+  Net *net_wrap = (Net*) handle->data;
 
   buf.base[nread] = 0;
   Local<Value> argv[2] = {

@@ -27,8 +27,8 @@ private:
   char *hostname_;
   int   port_;
 
-  uv_tcp_t *handle_;
-  uv_connect_t *socket_;
+  uv_tcp_t *uv_handle_;
+  uv_connect_t *uv_socket_;
 
   static Handle<Value> Connect(const Arguments& args);
   static Handle<Value> Write(const Arguments& args);
@@ -41,6 +41,7 @@ private:
   static uv_buf_t Alloc(uv_handle_t* handle, size_t size);
   static void AfterConnection(uv_connect_t *socket, int status);
   static void AfterWrite(uv_write_t *writer, int status);
+  static void AfterEnd(uv_handle_t *handle);
   static void Read(uv_stream_t *handle, ssize_t nread, uv_buf_t buf);
 
 };
