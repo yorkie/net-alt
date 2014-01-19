@@ -33,7 +33,7 @@ socket.connect(function(err, data) {
 
 * net(NodeJS): 14.0~M
 
-* SimpleNet: 8.3M
+* SimpleNet: 8.3~M
 
 
 ### LICENSE
