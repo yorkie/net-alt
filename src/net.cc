@@ -9,7 +9,7 @@ Persistent<Function> Net::constructor;
 
 void Net::Init(Handle<Object> exports) {
   Local<FunctionTemplate> tpl = FunctionTemplate::New(Net::NewInstance);
-  tpl->SetClassName(String::NewSymbol("SimpleNet"));
+  tpl->SetClassName(String::NewSymbol("Socket"));
   tpl->InstanceTemplate()->SetInternalFieldCount(3);
   // Prototype
   tpl->PrototypeTemplate()->Set(String::NewSymbol("connect"),
@@ -19,7 +19,7 @@ void Net::Init(Handle<Object> exports) {
   tpl->PrototypeTemplate()->Set(String::NewSymbol("end"),
       FunctionTemplate::New(End)->GetFunction());
   constructor = Persistent<Function>::New(tpl->GetFunction());
-  exports->Set(String::NewSymbol("SimpleNet"), constructor);
+  exports->Set(String::NewSymbol("Socket"), constructor);
 }
 
 Handle<Value> Net::NewInstance(const Arguments& args) {

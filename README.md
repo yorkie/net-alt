@@ -21,7 +21,7 @@ $ npm install net-alt
 ### Usage
 
 ```js
-var socket = new netAlt.SimpleNet(143, '163.177.65.209');
+var socket = new netAlt.Socket(143, '163.177.65.209');
 socket.connect(function(err, data) {
   this.write('client says hello!\r\n');
   this.end(); // close fd via this.
