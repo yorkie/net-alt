@@ -32,6 +32,9 @@ private:
   Persistent<v8::Object> object_;
 
   static Handle<Value> Connect(const Arguments& args);
+  static Handle<Value> Write(const Arguments& args);
+  static Handle<Value> End(const Arguments& args);
+
   static Persistent<Function> constructor;
   static Persistent<Function> callback;
 

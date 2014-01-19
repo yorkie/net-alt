@@ -11,10 +11,14 @@ Persistent<Function> Net::callback;
 void Net::Init(Handle<Object> exports) {
   Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
   tpl->SetClassName(String::NewSymbol("SimpleNet"));
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  tpl->InstanceTemplate()->SetInternalFieldCount(3);
   // Prototype
   tpl->PrototypeTemplate()->Set(String::NewSymbol("connect"),
       FunctionTemplate::New(Connect)->GetFunction());
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("write"),
+      FunctionTemplate::New(Write)->GetFunction());
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("end"),
+      FunctionTemplate::New(End)->GetFunction());
   constructor = Persistent<Function>::New(tpl->GetFunction());
   exports->Set(String::NewSymbol("SimpleNet"), constructor);
 }
@@ -65,6 +69,16 @@ Handle<Value> Net::Connect(const Arguments& args) {
   netobj->handle_->data = netobj;
   uv_tcp_init(uv_default_loop(), netobj->handle_);
   uv_tcp_connect(netobj->socket_, netobj->handle_, dest, AfterConnection);
+  return args.This();
+}
+
+Handle<Value> Net::Write(const Arguments& args) {
+  HandleScope scope;
+  return args.This();
+}
+
+Handle<Value> Net::End(const Arguments& args) {
+  HandleScope scope;
   return args.This();
 }
 
