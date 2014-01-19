@@ -2,6 +2,7 @@
 #include "net.h"
 #include "uv.h"
 
+using namespace std;
 using namespace v8;
 
 Persistent<Function> Net::constructor;
@@ -19,12 +20,26 @@ void Net::Init(Handle<Object> exports) {
 
 Handle<Value> Net::New(const Arguments& args) {
   HandleScope scope;
+  int port;
+  string hostname;
+
+  if (!args[0]->IsNumber() || !args[1]->IsString())
+    return ThrowTypeError("Bad parameter");
+  
+  v8::String::Utf8Value phost(args[1]->ToString());
+  port = args[0]->Int32Value();
+  hostname = string(*phost);
 
   if (args.IsConstructCall()) {
-    Net* netobj = new Net();
+    Net* netobj = new Net(port, hostname);
     netobj->Wrap(args.This());
   }
   return args.This();
+}
+
+Net::Net(int port, string hostname) {
+  hostname_ = const_cast<char*>(hostname.c_str());
+  port_ = port;
 }
 
 Net::Net() {
@@ -38,19 +53,15 @@ Net::~Net() {
 Handle<Value> Net::Connect(const Arguments& args) {
   HandleScope scope;
 
-  uv_tcp_t *handle = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
-  uv_connect_t *sock = (uv_connect_t *)malloc(sizeof(uv_connect_t));
-  struct sockaddr_in dest = uv_ip4_addr("163.177.65.209", 143);
+  Net *netobj = Unwrap<Net>(args.This());
+  netobj->handle_ = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
+  netobj->socket_ = (uv_connect_t *)malloc(sizeof(uv_connect_t));
+  struct sockaddr_in dest = uv_ip4_addr(netobj->hostname_, netobj->port_);
 
-  sock->data = handle;
-  uv_tcp_init(uv_default_loop(), handle);
-  uv_tcp_connect(sock, handle, dest, OnConnected);
+  netobj->socket_->data = netobj->handle_;
+  uv_tcp_init(uv_default_loop(), netobj->handle_);
+  uv_tcp_connect(netobj->socket_, netobj->handle_, dest, OnConnected);
   return args.This();
-}
-
-Handle<Value> Net::Connect(int port, String hostname) {
-  HandleScope scope;
-  return scope.Close(Null());
 }
 
 uv_buf_t Net::Alloc(uv_handle_t* handle, size_t size) {
@@ -68,7 +79,6 @@ void Net::OnConnected(uv_connect_t *sock, int status) {
 }
 
 void Net::ReadConnection(uv_stream_t *handle, ssize_t nread, uv_buf_t buf) {
-  printf("S: %s\n", buf.base);
   free(buf.base);
   uv_read_stop(handle);
 }
