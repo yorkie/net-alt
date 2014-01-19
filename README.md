@@ -29,11 +29,11 @@ socket.connect(function(err, data) {
 ```
 
 
-### Current comparison with 200 connections
+### Current comparison with 900 connections
 
-* net(NodeJS): 8.8M
+* net(NodeJS): 14.0~M
 
-* SimpleNet: 7.2M
+* SimpleNet: 8.3M
 
 
 ### LICENSE
