@@ -7,7 +7,7 @@ for (var i=0; i<200; i++) {
   socket.connect(function(err, data) {
     console.log(data);
     if (this.count++ < 1) {
-      this.write('a1 login l900422@vip.qq.com Lyz15285115151\r\n');
+      this.write('a1 login l900422@vip.qq.com xxxxxxxxxx\r\n');
     } else {
       this.end();
     }
