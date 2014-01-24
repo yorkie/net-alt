@@ -2,16 +2,8 @@
   "name": "net-alt",
   "version": "0.0.1",
   "author": "Yorkie Neil <yorkiefixer@gmail.com>",
-  "description": "alternative module to net, more lighter",
-  "keywords": [
-    "tcp",
-    "net",
-    "alternative module"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/yorkie/net-alt.git"
-  },
+  "description": "Alternate implementation to replace the partial core net",
+  "repository": "git://github.com/yorkie/net-alt.git",
   "homepage": "https://github.com/yorkie/net-alt",
   "main": "lib/index.js",
   "scripts": {

@@ -18,6 +18,10 @@ void Net::Init(Handle<Object> exports) {
       FunctionTemplate::New(Write)->GetFunction());
   tpl->PrototypeTemplate()->Set(String::NewSymbol("end"),
       FunctionTemplate::New(End)->GetFunction());
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("setNoDelay"),
+      FunctionTemplate::New(SetNoDelay)->GetFunction());
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("setKeepAlive"),
+      FunctionTemplate::New(SetKeepAlive)->GetFunction());
   constructor = Persistent<Function>::New(tpl->GetFunction());
   exports->Set(String::NewSymbol("Socket"), constructor);
 }
@@ -69,8 +73,54 @@ Handle<Value> Net::Connect(const Arguments& args) {
 
   net_wrap->uv_socket_->data = net_wrap;
   net_wrap->uv_handle_->data = net_wrap;
+
   uv_tcp_init(uv_default_loop(), net_wrap->uv_handle_);
-  uv_tcp_connect(net_wrap->uv_socket_, net_wrap->uv_handle_, dest, AfterConnection);
+  int status = uv_tcp_connect(net_wrap->uv_socket_, net_wrap->uv_handle_, dest, AfterConnection);
+  if (status < 0)
+    ThrowTypeError("Open files is limited, please `ulimit -a` to check this");
+  
+  return args.This();
+}
+
+Handle<Value> Net::SetNoDelay(const Arguments& args) {
+  HandleScope scope;
+  Net *net_wrap = Unwrap<Net>(args.This());
+
+  int enable = 1;
+  if (args.Length() == 1 && args[0]->IsBoolean()) {
+    enable = args[0]->BooleanValue() ? 1 : 0;
+  }
+
+  uv_tcp_nodelay(net_wrap->uv_handle_, enable);
+  return args.This();
+}
+
+Handle<Value> Net::SetKeepAlive(const Arguments& args) {
+  HandleScope scope;
+  Net *net_wrap = Unwrap<Net>(args.This());
+
+  int enable = 1;
+  unsigned int delay = 0;
+
+  if (args.Length() == 1) {
+    if (args[0]->IsBoolean()) 
+      enable = args[0]->BooleanValue() ? 1 : 0;
+    else if (args[0]->IsNumber())
+      delay = args[0]->Int32Value();
+    else
+      ThrowTypeError("Bad Arguments");
+  }
+
+  if (args.Length() >= 2) {
+    if (args[0]->IsBoolean() && args[1]->IsNumber()) {
+      enable = args[0]->BooleanValue() ? 1 : 0;
+      delay = args[1]->Int32Value();
+    } else {
+      ThrowTypeError("Bad Arguments");
+    }
+  }
+
+  uv_tcp_keepalive(net_wrap->uv_handle_, enable, delay);
   return args.This();
 }
 
@@ -110,7 +160,11 @@ uv_buf_t Net::Alloc(uv_handle_t* handle, size_t size) {
 void Net::AfterConnection(uv_connect_t *socket, int status) {
   HandleScope scope;
   Net *net_wrap = static_cast<Net*>(socket->data);
-  uv_read_start((uv_stream_t*)net_wrap->uv_handle_, Alloc, Read);
+
+  if (status < 0)
+    ThrowTypeError("Open files is limited, please `ulimit -a` to check this");
+  else
+    uv_read_start((uv_stream_t*)net_wrap->uv_handle_, Alloc, Read);
 }
 
 void Net::AfterWrite(uv_write_t *writer, int status) {
@@ -118,7 +172,10 @@ void Net::AfterWrite(uv_write_t *writer, int status) {
   Net *net_wrap = static_cast<Net*>(writer->data);
   free(writer);
 
-  uv_read_start((uv_stream_t*)net_wrap->uv_handle_, Alloc, Read);
+  if (status < 0)
+    ThrowTypeError("Open files is limited, please `ulimit -a` to check this");
+  else
+    uv_read_start((uv_stream_t*)net_wrap->uv_handle_, Alloc, Read);
 }
 
 void Net::AfterEnd(uv_handle_t *handle) {

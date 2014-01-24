@@ -34,6 +34,9 @@ private:
   static Handle<Value> Write(const Arguments& args);
   static Handle<Value> End(const Arguments& args);
 
+  static Handle<Value> SetNoDelay(const Arguments& args);
+  static Handle<Value> SetKeepAlive(const Arguments& args);
+
   static Persistent<Function> constructor;
   Persistent<Function> callback_;
   Persistent<Object> object_;
