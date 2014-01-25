@@ -1,6 +1,6 @@
 {
   "name": "net-alt",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Yorkie Neil <yorkiefixer@gmail.com>",
   "description": "Alternate implementation to replace the partial core net",
   "repository": "git://github.com/yorkie/net-alt.git",
